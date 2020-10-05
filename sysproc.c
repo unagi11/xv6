@@ -146,3 +146,8 @@ sys_set_prio(void) {
 
 //  return do_set_prio(prio);
 }
+
+int
+sys_cps(void) {
+  return do_cps();
+}

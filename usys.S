@@ -35,3 +35,6 @@ SYSCALL(hello_name) 		// 1-2
 SYSCALL(get_num_proc)		// 1-3
 SYSCALL(get_max_pid)		// 1-4
 SYSCALL(get_proc_info)	// 1-5
+SYSCALL(cps)				// ps
+SYSCALL(get_prio)
+SYSCALL(set_prio)

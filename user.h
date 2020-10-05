@@ -40,8 +40,13 @@ void* malloc(uint);
 void free(void*);
 int atoi(const char*);
 
-void hello(void);					// 1-1
-void hello_name(const char*);	// 1-2
-int get_num_proc(void);			// 1-3
-int get_max_pid(void);			// 1-4
-int get_proc_info(int, struct processInfo*);			// 1-5
+void hello(void);									// 1-1
+void hello_name(const char*);					// 1-2
+int get_num_proc(void);							// 1-3
+int get_max_pid(void);							// 1-4
+int get_proc_info(int, struct processInfo*);	// 1-5
+
+int cps(void);										// ps
+
+int get_prio(void); 								// 2-1
+int set_prio(int);									// 2-2

@@ -124,6 +124,7 @@ void            yield(void);
 int             do_get_num_proc(void);
 int             do_get_max_pid(void);
 int             do_get_proc_info(int, struct processInfo*);
+int 			do_cps(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

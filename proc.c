@@ -580,9 +580,7 @@ do_get_proc_info(int pid, struct processInfo *procInfo)
   acquire(&ptable.lock);
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    if (p->pid != 0)
-      cprintf("%d\n", p->pid);
-/*    if (p->pid == pid) {
+    if (p->pid == pid) {
       if (pid == 1)
         procInfo->ppid = 0;
       else
@@ -592,12 +590,48 @@ do_get_proc_info(int pid, struct processInfo *procInfo)
       procInfo->numberContextSwitches = p->counter;
       release(&ptable.lock);
       return 0;
-    }*/
+    }
   }
   cprintf("end\n");
 
   release(&ptable.lock);
   return -1;
+}
+
+int
+do_cps()
+{
+
+  static char *states[] = {
+  [UNUSED]    "unused",
+  [EMBRYO]    "embryo",
+  [SLEEPING]  "sleep ",
+  [RUNNABLE]  "runble",
+  [RUNNING]   "run   ",
+  [ZOMBIE]    "zombie"
+  };
+
+  struct proc *p;
+  sti();
+
+  acquire(&ptable.lock);
+  cprintf("name   pid    state \n");
+
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->state == EMBRYO)
+      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+    else if (p->state == SLEEPING)
+      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+    else if (p->state == RUNNABLE)
+      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+    else if (p->state == RUNNING)
+      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+    else if (p->state == ZOMBIE)
+      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+  }
+  release(&ptable.lock);
+
+  return 22;
 }
 
 int

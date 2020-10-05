@@ -14896,6 +14896,11 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   c = &cpus[cpuid()];
 801069b6:	e8 15 ce ff ff       	call   801037d0 <cpuid>
 801069bb:	69 c0 b0 00 00 00    	imul   $0xb0,%eax,%eax
+static inline void
+lgdt(struct segdesc *p, int size)
+{
+  volatile ushort pd[3];
+
   pd[0] = size-1;
 801069c1:	ba 2f 00 00 00       	mov    $0x2f,%edx
 801069c6:	66 89 55 f2          	mov    %dx,-0xe(%ebp)
@@ -14926,6 +14931,7 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   pd[2] = (uint)p >> 16;
 80106a23:	c1 e8 10             	shr    $0x10,%eax
 80106a26:	66 89 45 f6          	mov    %ax,-0xa(%ebp)
+
   asm volatile("lgdt (%0)" : : "r" (pd));
 80106a2a:	8d 45 f2             	lea    -0xe(%ebp),%eax
 80106a2d:	0f 01 10             	lgdtl  (%eax)

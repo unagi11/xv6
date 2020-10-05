@@ -90,6 +90,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->prio = 10; // default priority
 
   release(&ptable.lock);
 
@@ -325,6 +326,7 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *q;
   struct cpu *c = mycpu();
   c->proc = 0;
   
@@ -334,29 +336,49 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    struct proc *high;
+
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
       if(p->state != RUNNABLE)
         continue;
+      high = p;
+
+      for (q = ptable.proc; q < &ptable.proc[NPROC]; q++) {
+        if(q->state != RUNNABLE)
+          continue;
+        if (high->prio < q->prio) {
+          high = q;
+        }
+      }
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
-
-      swtch(&(c->scheduler), p->context);
-//      c->proc->counter++;
-      p->counter++;
-
+      c->proc = high;
+      switchuvm(high);
+      high->state = RUNNING;
+      high->counter++;
+      swtch(&(c->scheduler), high->context);
       switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
     }
-    release(&ptable.lock);
 
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE)
+        continue;
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+      p->counter++;
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
+      c->proc = 0;
+    }
+
+    release(&ptable.lock);
   }
 }
 
@@ -383,10 +405,9 @@ sched(void)
     panic("sched interruptible");
   intena = mycpu()->intena;
 
+  p->counter++;//context switch counter up
   swtch(&p->context, mycpu()->scheduler);
   // 현재 문맥을 cpu의 scheduler context에 넣는다.
-  p->counter++;//context switch counter up
-  //  mycpu()->proc->counter++;
 
   mycpu()->intena = intena;
 }
@@ -580,7 +601,7 @@ do_get_proc_info(int pid, struct processInfo *procInfo)
   acquire(&ptable.lock);
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    if (p->pid == pid) {
+    if (p->pid == pid && p->state != UNUSED) {
       if (pid == 1)
         procInfo->ppid = 0;
       else
@@ -592,7 +613,6 @@ do_get_proc_info(int pid, struct processInfo *procInfo)
       return 0;
     }
   }
-  cprintf("end\n");
 
   release(&ptable.lock);
   return -1;
@@ -615,19 +635,19 @@ do_cps()
   sti();
 
   acquire(&ptable.lock);
-  cprintf("name   pid    state \n");
+  cprintf("name   pid    state     prio\n");
 
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if (p->state == EMBRYO)
-      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+      cprintf("%s    %d    %s    %d\n", p->name, p->pid, states[p->state], p->prio);
     else if (p->state == SLEEPING)
-      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+      cprintf("%s    %d    %s    %d\n", p->name, p->pid, states[p->state], p->prio);
     else if (p->state == RUNNABLE)
-      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+      cprintf("%s    %d    %s    %d\n", p->name, p->pid, states[p->state], p->prio);
     else if (p->state == RUNNING)
-      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+      cprintf("%s    %d    %s    %d\n", p->name, p->pid, states[p->state], p->prio);
     else if (p->state == ZOMBIE)
-      cprintf("%s    %d    %s \n", p->name, p->pid, states[p->state]);
+      cprintf("%s    %d    %s    %d\n", p->name, p->pid, states[p->state], p->prio);
   }
   release(&ptable.lock);
 
@@ -643,6 +663,8 @@ do_get_prio(void)
 int
 do_set_prio(int prio) 
 {
+  if (prio < 0)
+    return -1;
   myproc()->prio = prio;
-  return -1;
+  return 1;
 }

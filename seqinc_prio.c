@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
         if (ret == 0)
         {
             set_prio(priority);
+            printf(1, "%d\n", get_prio());
             delay(20);
             exit();
         }
@@ -55,8 +56,14 @@ int main(int argc, char *argv[])
         }
     }
 
+    for (int i = 0; i < 20; i++) {
+        delay(1);
+        cps();
+    }
+
     for (int i = 0; i < N; i++)
     {
+        cps();
         rets[i] = wait();
     }
 

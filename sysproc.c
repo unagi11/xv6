@@ -133,8 +133,7 @@ sys_get_proc_info(void) {
 
 int
 sys_get_prio(void) {
-//  return do_get_prio();
-  return 0;
+  return do_get_prio();
 }
 
 int
@@ -142,9 +141,8 @@ sys_set_prio(void) {
 
   int prio;
   argint(0, &prio);
-  return 0;
 
-//  return do_set_prio(prio);
+  return do_set_prio(prio);
 }
 
 int

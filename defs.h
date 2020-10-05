@@ -125,6 +125,8 @@ int             do_get_num_proc(void);
 int             do_get_max_pid(void);
 int             do_get_proc_info(int, struct processInfo*);
 int 			do_cps(void);
+int 			do_get_prio(void);
+int 			do_set_prio(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

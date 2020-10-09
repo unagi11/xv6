@@ -22,6 +22,6 @@ int main(int argc, char const *argv[])
  * usys.S
  * syscall.h
  * syscall.c
- * sysfile.c > processInfo.h 추가
+ * sysproc.c > processInfo.h 추가
  * proc.c > processInfo.h 추가
  */

@@ -364,11 +364,9 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
-    }
 
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
-        continue;
+      	continue;
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
@@ -377,7 +375,6 @@ scheduler(void)
       switchkvm();
       c->proc = 0;
     }
-
     release(&ptable.lock);
   }
 }
